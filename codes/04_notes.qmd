@@ -1,0 +1,131 @@
+---
+title: "Notes on Data and Methodology"
+author: "Tommaso Pellegrinetti"
+date: "2023-10-20"
+format:
+  pdf:
+    code-fold: false
+    number-sections: false
+---
+
+```{r}
+#| echo: false
+#| warning: false
+library (dplyr)
+library (ggplot2)
+library(maps)
+library(viridis)
+library(ggrepel)
+library(ggridges)
+library(tidyr)
+library(ggcorrplot)
+
+personalized_theme <- function() {
+  theme_minimal() +
+    theme(
+      plot.title = element_text(size = 16, hjust = 0, face = "bold"),
+      plot.subtitle = element_text(size = 12, hjust = 0),
+      axis.title = element_text(size = 9, face = "bold"),
+      axis.text = element_text(size = 9),
+      legend.text = element_text(size = 9),
+      legend.key.size = unit(0.5, "cm"),
+      legend.key.width = unit(0.5, "cm"),
+      plot.caption = element_text(hjust = 0, color = 'grey37') 
+    )
+}
+
+theme_set(theme_bw())
+dataset <- read.csv("Data/cleaned_data/final_salaries_data.csv")
+latlong <- read.csv("files/latlong.csv")
+dataset <- inner_join(dataset, latlong, by="location")
+# adjust population size
+dataset$city_population <- dataset$city_population / 1000000
+map.europe <- map_data("world")
+```
+
+
+#### Jobs and Cities Included in the Analysis
+The list of job positions comprising the sample for this analysis was generated with the assistance of ChatGPT and can be located in the file ```files/jobs.txt```. More specifically, job titles were produced by ChatGPT in response to the following prompt:
+
+*For a personal data visualization projects, I want to explore differences in salaries across some European Cities. To do so, I need to define a set of job positions whose salaries will be collected from websites like Glassdoor, Indeed, or Monster. Keep in mind that I would like to research commonly used job titles across different industries and ensure consistency across locations and local language variations. In addition, I am primarily interested in the tertiary sector. Could you please provide me with a list of 100 job titles that in your opinion would be suitable for this kind of analysis?*
+
+In the process of data cleaning, four job titles out of 100 were excluded because of insufficient observations.
+
+The resulting list of job titles covered in this analysis is as follows:
+
+```{r}
+#| echo: false
+print(sort(unique(dataset$job)))
+```
+
+It's worth noting that certain job titles only appear in specific countries, as documented in Figure @fig-distributionpositions. For example, around 25 jobs appear in 11-15 cities, while only 12 jobs appear in 26-28 cities. 
+
+```{r}
+#| echo: false
+#| label: fig-distributionpositions
+#| fig-cap: "Histogram of the number of cities where a job role appears."
+
+# Calculate the number of cities each job appears in
+job_city_count <- dataset %>%
+  group_by(job) %>%
+  summarise(city_count = n_distinct(location))
+
+  # Create bins based on the city count
+job_city_count$bin <- cut(job_city_count$city_count,
+  breaks = c(1, 5, 10, 15, 20, 25, 28),
+  labels = c("1-5 cities", "6-10 cities", "11-15 cities", "16-20 cities", "21-25 cities", "26-28 cities"),
+  include.lowest = TRUE
+)
+
+# Plot the count of jobs in each bin
+ggplot(job_city_count, aes(x = bin)) +
+  geom_bar(fill = "#26828EFF", color = "black", alpha=0.8) +
+  labs(
+    # title = "Number of Jobs in Each City Count Bin",
+    x = "City Count Bin",
+    y = "Number of Job Titles"
+  ) +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
+  personalized_theme() + 
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(color = "gray", linetype = "dotted", linewidth = 0.5),
+    panel.grid.minor.y = element_line(color = "gray", linetype = "dotted", linewidth = 0.5),
+  )
+
+```
+
+
+For personal interests, the analysis has been confined to cities in Western Europe. Initially, my objective was to gather data from the four/five largest cities in Italy, France, Germany, the UK, Austria, Spain, Switzerland, the Netherlands, and Poland. However, due to limited data availability, I was only able to collect data for some of those cities. In the process of data cleaning, I made the decision to exclude cities with fewer than 20 available job titles. It's worth noting that there is considerable variability in the number of job roles analyzed in each city, as illustrated in Figure @fig-distributionjobs.
+
+```{r}
+#| echo: false
+#| label: fig-distributionjobs
+#| fig-cap: "Distribution of Job Positions Collected Across Cities"
+dataset %>%
+  group_by(location) %>%
+  summarise(num_postings = n_distinct(job)) %>%
+  arrange(desc(num_postings)) %>%
+  ggplot(aes(x = reorder(location, -num_postings), y = num_postings)) +
+  geom_bar(stat = "identity", fill = "#26828EFF", color = "black", alpha=0.8) +
+  labs(
+    x = "City",
+    y = "N. Job Titles"
+  ) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    personalized_theme() + 
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(color = "gray", linetype = "dotted", linewidth = 0.5),
+    panel.grid.minor.y = element_line(color = "gray", linetype = "dotted", linewidth = 0.5),
+  )
+```
+
+#### Limitations
+It's essential to understand that the results of this analysis should not be regarded as representative of actual salaries in the selected cities.
+In fact, there are several significant limitations to this analysis that should be taken into consideration when interpreting the results. Firstly, it's important to note that the number of observations (i.e. the number of reported salaries) for each city-job data point is generally quite limited. Additionally, the sample of job roles selected is incomplete and non-representative of the whole population of salaries in those countries. Another potential source of bias stems from the fact that I exclusively searched for English job titles, even though some job positions are typically expressed in national languages.
+In conclusion, it is essential to underscore that the results of this analysis should be regarded as the outcome of a learning exercise rather than as definitive indicators of real-world salary patterns.
+Additional research and comprehensive data collection are necessary to refine our understanding of the intricate dynamics that shape compensation across Europe.

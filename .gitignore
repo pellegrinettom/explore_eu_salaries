@@ -1,0 +1,5 @@
+tmp/
+.vscode
+.venv/
+secrets/
+.DS_Store
