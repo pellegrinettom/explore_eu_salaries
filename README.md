@@ -9,12 +9,12 @@ Here is a description of the scripts in the ```codes``` folder:
 - ```03_create_visuals.R```: Creates data visualizations with ggplot2.
 
 # Visuals
-![Fig. 1]('visuals/avgmediansalary.png') <br>
-![Fig. 2]('visuals/avgmediansalarybox.png') <br>
-![Fig. 3]('visuals/avgmediansalarymap.png') <br>
-![Fig. 4]('visuals/corrheatmap.png') <br>
-![Fig. 5]('visuals/highestandlowestsalaries.png') <br>
-![Fig. 6]('visuals/ridgeslargecities.png') <br>
+<img src= "visuals/avgmediansalary.png" alt="Fig. 1" title=""> <br>
+<img src= "visuals/avgmediansalarybox.png" alt="Fig. 2" title=""> <br>
+<img src= "visuals/avgmediansalarymap.png" alt="Fig. 3" title=""> <br>
+<img src= "visuals/corrheatmap.png" alt="Fig. 4" title=""> <br>
+<img src= "visuals/highestandlowestsalaries.png" alt="Fig. 5" title=""> <br>
+<img src= "visuals/ridgeslargecities.png" alt="Fig. 6" title="">
 
 # Disclaimer
 The results of this analysis are for educational and exploratory purposes only.
